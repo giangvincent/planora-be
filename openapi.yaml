@@ -1,0 +1,948 @@
+openapi: 3.1.0
+info:
+  title: Planora API
+  version: "1.0.0"
+  description: |
+    API specification for the Planora productivity backend.
+ servers:
+  - url: http://localhost
+    description: Local development
+tags:
+  - name: Auth
+  - name: Profile
+  - name: Goals
+  - name: Tasks
+  - name: Calendar
+  - name: Notifications
+  - name: Integrations
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Issue an access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        "401":
+          description: Invalid credentials
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the current access token
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logged out
+  /api/v1/me:
+    get:
+      tags: [Profile]
+      summary: Current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResource'
+    patch:
+      tags: [Profile]
+      summary: Update profile settings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        "200":
+          description: Updated profile
+  /api/v1/me/password:
+    patch:
+      tags: [Profile]
+      summary: Update password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        "200":
+          description: Password updated
+  /api/v1/goals:
+    get:
+      tags: [Goals]
+      summary: List goals
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/StatusQuery'
+        - $ref: '#/components/parameters/SearchQuery'
+        - $ref: '#/components/parameters/PageQuery'
+        - $ref: '#/components/parameters/PerPageQuery'
+      responses:
+        "200":
+          description: Goal collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGoalResponse'
+    post:
+      tags: [Goals]
+      summary: Create goal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreGoalRequest'
+      responses:
+        "201":
+          description: Created
+  /api/v1/goals/{id}:
+    get:
+      tags: [Goals]
+      summary: Retrieve goal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalId'
+      responses:
+        "200":
+          description: Goal detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalResource'
+    patch:
+      tags: [Goals]
+      summary: Update goal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGoalRequest'
+      responses:
+        "200":
+          description: Updated
+    delete:
+      tags: [Goals]
+      summary: Delete goal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalId'
+      responses:
+        "204":
+          description: Deleted
+  /api/v1/goals/{id}/complete:
+    post:
+      tags: [Goals]
+      summary: Mark goal complete
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalId'
+      responses:
+        "200":
+          description: Completed
+  /api/v1/goals/{id}/archive:
+    post:
+      tags: [Goals]
+      summary: Archive goal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalId'
+      responses:
+        "200":
+          description: Archived
+  /api/v1/tasks:
+    get:
+      tags: [Tasks]
+      summary: List tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskStatus'
+        - $ref: '#/components/parameters/TaskGoalId'
+        - $ref: '#/components/parameters/TaskPriority'
+        - $ref: '#/components/parameters/DueDate'
+        - $ref: '#/components/parameters/WeekParam'
+        - $ref: '#/components/parameters/SearchQuery'
+        - $ref: '#/components/parameters/PageQuery'
+        - $ref: '#/components/parameters/PerPageQuery'
+      responses:
+        "200":
+          description: Task collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTaskResponse'
+    post:
+      tags: [Tasks]
+      summary: Create task
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreTaskRequest'
+      responses:
+        "201":
+          description: Created
+  /api/v1/tasks/bulk:
+    post:
+      tags: [Tasks]
+      summary: Bulk mutate tasks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkTaskRequest'
+      responses:
+        "200":
+          description: Bulk processed
+  /api/v1/tasks/{id}:
+    get:
+      tags: [Tasks]
+      summary: Retrieve task
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        "200":
+          description: Task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResource'
+    patch:
+      tags: [Tasks]
+      summary: Update task
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        "200":
+          description: Updated
+    delete:
+      tags: [Tasks]
+      summary: Delete task
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        "204":
+          description: Deleted
+  /api/v1/tasks/{id}/complete:
+    post:
+      tags: [Tasks]
+      summary: Mark task complete
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        "200":
+          description: Completed
+  /api/v1/tasks/{id}/skip:
+    post:
+      tags: [Tasks]
+      summary: Skip task
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        "200":
+          description: Skipped
+  /api/v1/calendar:
+    get:
+      tags: [Calendar]
+      summary: Calendar entries within range
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CalendarStart'
+        - $ref: '#/components/parameters/CalendarEnd'
+      responses:
+        "200":
+          description: Calendar dataset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CalendarEvent'
+  /api/v1/calendar/entries:
+    post:
+      tags: [Calendar]
+      summary: Create manual calendar entry
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreCalendarEntryRequest'
+      responses:
+        "201":
+          description: Created
+  /api/v1/calendar/entries/{id}:
+    patch:
+      tags: [Calendar]
+      summary: Update calendar entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CalendarEntryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCalendarEntryRequest'
+      responses:
+        "200":
+          description: Updated
+    delete:
+      tags: [Calendar]
+      summary: Delete calendar entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CalendarEntryId'
+      responses:
+        "204":
+          description: Deleted
+  /api/v1/notifications:
+    get:
+      tags: [Notifications]
+      summary: List notifications
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/NotificationStatus'
+        - $ref: '#/components/parameters/DateStart'
+        - $ref: '#/components/parameters/DateEnd'
+        - $ref: '#/components/parameters/PageQuery'
+        - $ref: '#/components/parameters/PerPageQuery'
+      responses:
+        "200":
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationResponse'
+  /api/v1/notifications/test:
+    post:
+      tags: [Notifications]
+      summary: Dispatch a test digest
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Scheduled
+  /api/v1/notifications/subscribe:
+    post:
+      tags: [Notifications]
+      summary: Save web push subscription
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+      responses:
+        "200":
+          description: Stored
+    delete:
+      tags: [Notifications]
+      summary: Remove web push subscription
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Removed
+  /api/v1/integrations:
+    get:
+      tags: [Integrations]
+      summary: List integrations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Integrations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IntegrationResource'
+  /api/v1/integrations/{provider}/connect:
+    post:
+      tags: [Integrations]
+      summary: Connect integration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IntegrationProvider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnectRequest'
+      responses:
+        "201":
+          description: Connected
+  /api/v1/integrations/{provider}/disconnect:
+    post:
+      tags: [Integrations]
+      summary: Disconnect integration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IntegrationProvider'
+      responses:
+        "200":
+          description: Disconnected
+  /api/v1/webhooks/{provider}:
+    get:
+      tags: [Integrations]
+      summary: Webhook endpoint placeholder
+      parameters:
+        - $ref: '#/components/parameters/IntegrationProvider'
+      responses:
+        "200":
+          description: Acknowledged
+    post:
+      tags: [Integrations]
+      summary: Webhook endpoint placeholder
+      parameters:
+        - $ref: '#/components/parameters/IntegrationProvider'
+      responses:
+        "200":
+          description: Acknowledged
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    GoalId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    TaskId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    CalendarEntryId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    IntegrationProvider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [gcal, notion, todoist]
+    StatusQuery:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [active, completed, archived]
+    SearchQuery:
+      name: q
+      in: query
+      schema:
+        type: string
+    PageQuery:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    PerPageQuery:
+      name: perPage
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+    TaskStatus:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [pending, done, skipped]
+    TaskGoalId:
+      name: goalId
+      in: query
+      schema:
+        type: integer
+    TaskPriority:
+      name: priority
+      in: query
+      schema:
+        type: string
+        enum: [low, medium, high]
+    DueDate:
+      name: dueDate
+      in: query
+      schema:
+        type: string
+        format: date
+    WeekParam:
+      name: week
+      in: query
+      schema:
+        type: string
+        example: 2025-W42
+    CalendarStart:
+      name: start
+      in: query
+      schema:
+        type: string
+        format: date-time
+    CalendarEnd:
+      name: end
+      in: query
+      schema:
+        type: string
+        format: date-time
+    NotificationStatus:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [pending, sent, failed]
+    DateStart:
+      name: start
+      in: query
+      schema:
+        type: string
+        format: date-time
+    DateEnd:
+      name: end
+      in: query
+      schema:
+        type: string
+        format: date-time
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        password_confirmation:
+          type: string
+        timezone:
+          type: string
+          example: Asia/Ho_Chi_Minh
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        deviceName:
+          type: string
+        remember:
+          type: boolean
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserResource'
+    UpdateProfileRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        timezone:
+          type: string
+        notificationChannel:
+          type: string
+          enum: [push, email, both]
+        settings:
+          type: object
+    UpdatePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword, newPassword_confirmation]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+        newPassword_confirmation:
+          type: string
+    StoreGoalRequest:
+      type: object
+      required: [title]
+      properties:
+        user_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        targetDate:
+          type: string
+          format: date
+        color:
+          type: string
+    UpdateGoalRequest:
+      allOf:
+        - $ref: '#/components/schemas/StoreGoalRequest'
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: [active, completed, archived]
+            progress:
+              type: integer
+              minimum: 0
+              maximum: 100
+    StoreTaskRequest:
+      type: object
+      required: [title, allDay]
+      properties:
+        user_id:
+          type: integer
+        goalId:
+          type: integer
+        title:
+          type: string
+        notes:
+          type: string
+        status:
+          type: string
+          enum: [pending, done, skipped]
+        priority:
+          type: string
+          enum: [low, medium, high]
+        estimatedMinutes:
+          type: integer
+        actualMinutes:
+          type: integer
+        dueDate:
+          type: string
+          format: date
+        dueAt:
+          type: string
+          format: date-time
+        allDay:
+          type: boolean
+        repeatRule:
+          type: string
+    UpdateTaskRequest:
+      allOf:
+        - $ref: '#/components/schemas/StoreTaskRequest'
+    BulkTaskRequest:
+      type: object
+      properties:
+        create:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreTaskRequest'
+        update:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/UpdateTaskRequest'
+              - type: object
+                required: [id]
+                properties:
+                  id:
+                    type: integer
+        delete:
+          type: array
+          items:
+            type: integer
+    StoreCalendarEntryRequest:
+      type: object
+      required: [startAt, allDay]
+      properties:
+        taskId:
+          type: integer
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        allDay:
+          type: boolean
+        isGenerated:
+          type: boolean
+    UpdateCalendarEntryRequest:
+      allOf:
+        - $ref: '#/components/schemas/StoreCalendarEntryRequest'
+    SubscriptionRequest:
+      type: object
+      required: [endpoint, keys]
+      properties:
+        endpoint:
+          type: string
+          format: uri
+        keys:
+          type: object
+          required: [p256dh, auth]
+          properties:
+            p256dh:
+              type: string
+            auth:
+              type: string
+    IntegrationConnectRequest:
+      type: object
+      required: [accessToken]
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        settings:
+          type: object
+    UserResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        timezone:
+          type: string
+        notificationChannel:
+          type: string
+        settings:
+          type: object
+        roles:
+          type: array
+          items:
+            type: string
+    GoalResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        progress:
+          type: integer
+        targetDate:
+          type: string
+          format: date
+    TaskResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        notes:
+          type: string
+        status:
+          type: string
+        priority:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        dueAt:
+          type: string
+          format: date-time
+        allDay:
+          type: boolean
+        repeatRule:
+          type: string
+        goalId:
+          type: integer
+    CalendarEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [task, calendar_entry]
+        title:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        allDay:
+          type: boolean
+        isGenerated:
+          type: boolean
+        taskId:
+          type: integer
+        goalId:
+          type: integer
+    NotificationResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        channel:
+          type: string
+        status:
+          type: string
+        scheduledFor:
+          type: string
+          format: date-time
+        sentAt:
+          type: string
+          format: date-time
+        error:
+          type: string
+    IntegrationResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        provider:
+          type: string
+        status:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        settings:
+          type: object
+    PaginatedGoalResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoalResource'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    PaginatedTaskResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskResource'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    PaginatedNotificationResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationResource'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        perPage:
+          type: integer
+        total:
+          type: integer
