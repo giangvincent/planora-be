@@ -49,4 +49,8 @@ return [
         ],
     ],
 
+    'tinify' => [
+        'key' => env('TINIFY_KEY'),
+    ],
+
 ];
