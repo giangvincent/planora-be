@@ -83,6 +83,16 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(Task::class);
     }
 
+    public function roles(): HasMany
+    {
+        return $this->hasMany(Role::class);
+    }
+
+    public function roleProgressSnapshots(): HasMany
+    {
+        return $this->hasMany(RoleProgressSnapshot::class);
+    }
+
     public function calendarEntries(): HasMany
     {
         return $this->hasMany(CalendarEntry::class);

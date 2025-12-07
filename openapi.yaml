@@ -15,6 +15,7 @@ tags:
   - name: Calendar
   - name: Notifications
   - name: Integrations
+  - name: Roles
 security:
   - bearerAuth: []
 paths:
@@ -491,6 +492,306 @@ paths:
       responses:
         "200":
           description: Acknowledged
+  /api/v1/roles:
+    get:
+      tags: [Roles]
+      summary: List roles
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  roles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RoleResource'
+    post:
+      tags: [Roles]
+      summary: Create role
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreRoleRequest'
+      responses:
+        "201":
+          description: Created
+  /api/v1/roles/import-from-ai:
+    post:
+      tags: [Roles]
+      summary: Import role from AI outline
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportRoleRequest'
+      responses:
+        "201":
+          description: Imported
+  /api/v1/roles/{id}:
+    get:
+      tags: [Roles]
+      summary: Get role
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      responses:
+        "200":
+          description: Role detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role:
+                    $ref: '#/components/schemas/RoleResource'
+    patch:
+      tags: [Roles]
+      summary: Update role
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        "200":
+          description: Updated
+    delete:
+      tags: [Roles]
+      summary: Delete role
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      responses:
+        "204":
+          description: Deleted
+  /api/v1/roles/{id}/phases:
+    post:
+      tags: [Roles]
+      summary: Add phase to role
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorePhaseRequest'
+      responses:
+        "201":
+          description: Created
+  /api/v1/phases/{id}:
+    patch:
+      tags: [Roles]
+      summary: Update phase
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PhaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePhaseRequest'
+      responses:
+        "200":
+          description: Updated
+    delete:
+      tags: [Roles]
+      summary: Delete phase
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PhaseId'
+      responses:
+        "204":
+          description: Deleted
+  /api/v1/phases/{id}/steps:
+    post:
+      tags: [Roles]
+      summary: Add step to phase
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PhaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreStepRequest'
+      responses:
+        "201":
+          description: Created
+  /api/v1/steps/{id}:
+    patch:
+      tags: [Roles]
+      summary: Update step
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/StepId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStepRequest'
+      responses:
+        "200":
+          description: Updated
+    delete:
+      tags: [Roles]
+      summary: Delete step
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/StepId'
+      responses:
+        "204":
+          description: Deleted
+  /api/v1/steps/{id}/tasks:
+    post:
+      tags: [Roles]
+      summary: Add learning task
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/StepId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreLearningTaskRequest'
+      responses:
+        "201":
+          description: Created
+  /api/v1/learning-tasks/{id}:
+    patch:
+      tags: [Roles]
+      summary: Update learning task
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LearningTaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLearningTaskRequest'
+      responses:
+        "200":
+          description: Updated
+    delete:
+      tags: [Roles]
+      summary: Delete learning task
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LearningTaskId'
+      responses:
+        "204":
+          description: Deleted
+  /api/v1/learning-tasks/{id}/complete:
+    post:
+      tags: [Roles]
+      summary: Complete learning task
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LearningTaskId'
+      responses:
+        "200":
+          description: Completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearningTaskCompleteResponse'
+  /api/v1/learning-tasks/{id}/sync-task:
+    post:
+      tags: [Roles]
+      summary: Sync learning task to planner task
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LearningTaskId'
+      responses:
+        "200":
+          description: Synced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearningTaskSyncResponse'
+  /api/v1/learning-tasks/{id}/auto-check:
+    get:
+      tags: [Roles]
+      summary: Get auto-check config
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LearningTaskId'
+      responses:
+        "200":
+          description: Auto-checks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auto_checks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AutoCheckResource'
+  /api/v1/learning-tasks/{id}/auto-check/run:
+    post:
+      tags: [Roles]
+      summary: Run auto-check
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LearningTaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: object
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    $ref: '#/components/schemas/AutoCheckResultResource'
 components:
   securitySchemes:
     bearerAuth:
@@ -504,7 +805,31 @@ components:
       required: true
       schema:
         type: integer
+    RoleId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
     TaskId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    PhaseId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    StepId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    LearningTaskId:
       name: id
       in: path
       required: true
@@ -946,3 +1271,226 @@ components:
           type: integer
         total:
           type: integer
+    RoleResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        visibility:
+          type: string
+          enum: [private, unlisted, public]
+        status:
+          type: string
+          enum: [draft, active, archived]
+        estimated_duration_weeks:
+          type: integer
+        phases:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolePhaseResource'
+    RolePhaseResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        role_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        order:
+          type: integer
+        estimated_duration_weeks:
+          type: integer
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhaseStepResource'
+    PhaseStepResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        phase_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        order:
+          type: integer
+        difficulty_level:
+          type: string
+          enum: [intro, intermediate, advanced]
+        learning_tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/LearningTaskResource'
+    LearningTaskResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        step_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [study, practice, project, quiz]
+        status:
+          type: string
+          enum: [pending, completed, skipped]
+        order:
+          type: integer
+        estimated_minutes:
+          type: integer
+        due_date:
+          type: string
+          format: date
+        linked_task_id:
+          type: integer
+        auto_checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutoCheckResource'
+    AutoCheckResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        learning_task_id:
+          type: integer
+        type:
+          type: string
+          enum: [quiz, text_keywords, code, rating]
+        config:
+          type: object
+    AutoCheckResultResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        auto_check_id:
+          type: integer
+        user_id:
+          type: integer
+        score:
+          type: integer
+        max_score:
+          type: integer
+        passed:
+          type: boolean
+        attempt_data:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+    StoreRoleRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        visibility:
+          type: string
+          enum: [private, unlisted, public]
+        status:
+          type: string
+          enum: [draft, active, archived]
+    UpdateRoleRequest:
+      allOf:
+        - $ref: '#/components/schemas/StoreRoleRequest'
+    ImportRoleRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+        roleTitle:
+          type: string
+        context:
+          type: string
+        outline:
+          type: object
+    StorePhaseRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        order:
+          type: integer
+        estimated_duration_weeks:
+          type: integer
+    UpdatePhaseRequest:
+      allOf:
+        - $ref: '#/components/schemas/StorePhaseRequest'
+    StoreStepRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        order:
+          type: integer
+        difficulty_level:
+          type: string
+          enum: [intro, intermediate, advanced]
+    UpdateStepRequest:
+      allOf:
+        - $ref: '#/components/schemas/StoreStepRequest'
+    StoreLearningTaskRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [study, practice, project, quiz]
+        status:
+          type: string
+          enum: [pending, completed, skipped]
+        order:
+          type: integer
+        estimated_minutes:
+          type: integer
+        due_date:
+          type: string
+          format: date
+    UpdateLearningTaskRequest:
+      allOf:
+        - $ref: '#/components/schemas/StoreLearningTaskRequest'
+    LearningTaskCompleteResponse:
+      type: object
+      properties:
+        learning_task:
+          $ref: '#/components/schemas/LearningTaskResource'
+        gamification:
+          type: object
+    LearningTaskSyncResponse:
+      type: object
+      properties:
+        learning_task:
+          $ref: '#/components/schemas/LearningTaskResource'
+        task:
+          $ref: '#/components/schemas/TaskResource'

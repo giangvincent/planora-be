@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Gamification;
 
 use App\Models\GamificationProfile;
+use App\Models\LearningTask;
 use App\Models\Task;
 use App\Models\Goal;
 use App\Models\User;
@@ -92,6 +93,47 @@ class GamificationService
         $profile->xp += 10;
         $profile->coins += 5;
         $profile->save();
+    }
+
+    /**
+     * Bonus when a learner passes an auto-check
+     */
+    public function grantAutoCheckBonus(User $user): void
+    {
+        $profile = $this->getOrCreateProfile($user);
+
+        $profile->xp += 20;
+        $profile->coins += 10;
+        $profile->save();
+    }
+
+    /**
+     * Handle learning task completion (roadmaps)
+     */
+    public function onLearningTaskCompleted(User $user, LearningTask $learningTask): void
+    {
+        $profile = $this->getOrCreateProfile($user);
+
+        $baseXp = 30;
+        $typeBonus = match ((string) $learningTask->type) {
+            'project' => 40,
+            'practice' => 20,
+            'quiz' => 15,
+            default => 10,
+        };
+
+        $estimated = $learningTask->estimated_minutes ?? 0;
+        $timeBonus = (int) floor($estimated / 15) * 5;
+
+        $xp = $baseXp + $typeBonus + $timeBonus;
+        $coins = (int) max(5, floor($xp / 10));
+
+        $profile->xp += $xp;
+        $profile->coins += $coins;
+        $profile->level = $this->calculateLevel($profile->xp);
+        $profile->save();
+
+        $this->streakService->checkAndUpdateStreak($user, now());
     }
 
     /**
